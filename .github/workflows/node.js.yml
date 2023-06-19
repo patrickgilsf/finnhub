@@ -27,5 +27,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm install
+    - name: "ENV file"
+      run: |
+        touch .env
+        echo "${{ secrets.ENV }}" > .env
     - run: node index
 
