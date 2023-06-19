@@ -1,43 +1,47 @@
 import 'dotenv/config'
 import finnhub from "finnhub"
 import WebSocket, { WebSocketServer } from 'ws';
+import robinhood from 'robinhood'
+import axios from 'axios';
+import {google} from 'googleapis'
+import moment from 'moment';
 
 const FinnKey = process.env.FinnKey
+const RHEmail = process.env.RHEmail
+const RHPW = process.env.RHPW
+const RHKey = process.env.RHKey
+const GoogleKey = process.env.GoogleKey
+const GoogleEmail = process.env.GoogleEmail
+const spreadsheetId = process.env.SpreadsheetId
 
+
+//finnkey stuff
 const api_key = finnhub.ApiClient.instance.authentications['api_key'];
 api_key.apiKey = FinnKey // Replace this
 const finnhubClient = new finnhub.DefaultApi()
 
-// // Stock candles
-// finnhubClient.stockCandles("AAPL", "D", 1590988249, 1591852249, (error, data, response) => {
-//     console.log(data)
-// });
+//google credentials
+const auth = new google.auth.JWT(
+  GoogleEmail,
+  null,
+  GoogleKey,
+  [
+    "https://www.googleapis.com/auth/spreadsheets"
+  ],
+  null
+)
+google.options({auth})
+const sheets = google.sheets('v4');
 
-// // Basic financials
-// finnhubClient.companyBasicFinancials("AAPL", "margin", (error, data, response) => {
-//   console.log(data)
-// });
-
-// // General news
-// finnhubClient.marketNews("general", {}, (error, data, response) => {
-//   console.log(data)
-// });
+//first day of month
+var date = new Date();
+var firstDay = moment(new Date(date.getFullYear(), date.getMonth(), 1)).format('YYYY-MM-DD');
 
 
-//websocket
-// const socket = new WebSocket(`wss://ws.finnhub.io?token=${FinnKey}`);
-// // Connection opened -> Subscribe
-// socket.addEventListener('open', function (event) {
-//   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'AAPL'}))
-//   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}))
-//   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'IC MARKETS:1'}))
-// });
 
-// // Listen for messages
-// socket.addEventListener('message', function (event) {
-//   console.log('Message from server ', event.data);
-// });
-// Unsubscribe
-// var unsubscribe = function(symbol) {
-//   socket.send(JSON.stringify({'type':'unsubscribe','symbol': symbol}))
-// }
+export {
+  sheets,
+  spreadsheetId,
+  finnhubClient,
+  firstDay
+}
