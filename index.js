@@ -29,13 +29,15 @@ const getRecData = async () => {
   const stocks = await getStocks();
   for (let stock of stocks) {
     let data = await getStockRec(stock);
-    let recentData = data.filter(a => a.period == firstDay).length;
+    // let recentData = data.filter(a => a.period == firstDay).length;
+    let recentData = data[0]
     totalData.push([
       recentData.buy,
       recentData.hold,
       recentData.sell,
       recentData.strongBuy,
-      recentData.strongSell
+      recentData.strongSell,
+      recentData.period
     ]);
   }
   return await totalData
@@ -43,7 +45,7 @@ const getRecData = async () => {
 
 const postToGoogle = async () => {
   let inputData = await getRecData();
-  // console.log(inputData)
+  console.log(inputData)
   sheets.spreadsheets.values.update({
     spreadsheetId,
     range: 'RecData',
