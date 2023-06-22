@@ -42,7 +42,7 @@ var firstDay = moment(new Date(date.getFullYear(), date.getMonth(), 1)).format('
 
 
 
-
+console.log('config file deployed')
 export {
   sheets,
   spreadsheetId,
