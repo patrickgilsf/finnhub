@@ -8,15 +8,18 @@ import {
 } from './config.js'
 
 const getStocks = async () => {
-  return new Promise((resolve, reject) => {
-    sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: 'MyStocks'
-    }, (err, res) => {
-      let stocks = res.data.values.map(([a]) => a);
-      err ? console.log(err) : resolve(stocks)
+  try {
+    return new Promise((resolve, reject) => {
+      sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: 'MyStocks'
+      }, (err, res) => {
+        let stocks = res.data.values.map(([a]) => a);
+        err ? console.log(err) : resolve(stocks)
+      })
     })
-  })
+  } catch(err) {console.log(err)}
+
 }
 
 const getStockRec = async (stock) => {
