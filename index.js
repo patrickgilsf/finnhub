@@ -9,6 +9,7 @@ import {
 
 const getStocks = async () => {
   try {
+    console.log('getting stock symbols from Google APIs')
     return new Promise((resolve, reject) => {
       sheets.spreadsheets.values.get({
         spreadsheetId,
@@ -18,7 +19,7 @@ const getStocks = async () => {
         err ? console.log(err) : resolve(stocks)
       })
     })
-  } catch(err) {console.log(err)}
+  } catch(err) {reject(err)}
 
 }
 
