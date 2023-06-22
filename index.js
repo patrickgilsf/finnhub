@@ -6,7 +6,7 @@ import {
   googleFinance,
   yahooFinance
 } from './config.js'
-
+console.log(spreadsheetId);
 const getStocks = async () => {
   try {
     console.log('getting stock symbols from Google APIs')
