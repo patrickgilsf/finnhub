@@ -2,7 +2,9 @@ import {
   sheets,
   spreadsheetId,
   finnhubClient,
-  firstDay
+  firstDay,
+  googleFinance,
+  yahooFinance
 } from './config.js'
 
 const getStocks = async () => {
@@ -24,9 +26,11 @@ const getStockRec = async (stock) => {
     })
   })
 }
+
 const getRecData = async () => {
   let totalData = [];
   const stocks = await getStocks();
+  console.log(stocks)
   for (let stock of stocks) {
     let data = await getStockRec(stock);
     // let recentData = data.filter(a => a.period == firstDay).length;
@@ -59,7 +63,13 @@ const postToGoogle = async () => {
   })
 }
 
+
 postToGoogle()
+// googleFinance.companyNews({
+//   symbol: 'NASDAQ:AAPL'
+// }, function (err, news) {
+//   console.log(news)
+// });
 
 
 

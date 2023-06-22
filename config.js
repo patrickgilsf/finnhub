@@ -1,10 +1,13 @@
-import 'dotenv/config'
-import finnhub from "finnhub"
+import 'dotenv/config';
+import finnhub from "finnhub";
 import WebSocket, { WebSocketServer } from 'ws';
-import robinhood from 'robinhood'
+import robinhood from 'robinhood';
 import axios from 'axios';
-import {google} from 'googleapis'
+import {google} from 'googleapis';
 import moment from 'moment';
+import googleFinance from 'google-finance';
+import yahooFinance from 'yahoo-finance';
+
 
 const FinnKey = process.env.FinnKey
 const RHEmail = process.env.RHEmail
@@ -39,9 +42,12 @@ var firstDay = moment(new Date(date.getFullYear(), date.getMonth(), 1)).format('
 
 
 
+
 export {
   sheets,
   spreadsheetId,
   finnhubClient,
-  firstDay
+  firstDay,
+  googleFinance,
+  yahooFinance
 }
