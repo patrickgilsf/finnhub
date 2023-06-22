@@ -28,6 +28,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - name: change directory
+    - run: cd .
     - run: npm install
     - name: 'Create env file'
       run: |
