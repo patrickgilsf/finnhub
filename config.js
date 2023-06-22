@@ -16,7 +16,7 @@ const RHKey = process.env.RHKey
 const GoogleKey = process.env.GoogleKey
 const GoogleEmail = process.env.GoogleEmail
 const spreadsheetId = process.env.SpreadsheetId
-
+console.log(GoogleEmail);
 
 //finnkey stuff
 const api_key = finnhub.ApiClient.instance.authentications['api_key'];
