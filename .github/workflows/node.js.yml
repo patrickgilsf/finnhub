@@ -34,8 +34,8 @@ jobs:
     - name: 'Create env file'
       run: |
         touch .env
-        echo "${{ secrets.GOOGLEKEY }}" >> .env
-        echo "${{ secrets.GOOGLEEMAIL }}" >> .env
+        echo "${{ secrets.GOOGLEKEY }}" > .env
+        echo "${{ secrets.GOOGLEEMAIL }}" > .env
         cat .env
       env:
         GOOGLEKEY: ${{ secrets.GOOGLEKEY }}s
