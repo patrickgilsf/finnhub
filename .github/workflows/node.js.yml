@@ -35,8 +35,8 @@ jobs:
       run: |
         touch .env
         echo "env created"
-        echo ${{ secrets.GOOGLEEMAIL }} > ".env"
-        echo ${{ secrets.GOOGLEKEY }} > ".env"
+        echo "${{ secrets.GOOGLEEMAIL }}"" > ".env"
+        echo "${{ secrets.GOOGLEKEY }}"" > ".env"
         ls
     - run: node index
 
