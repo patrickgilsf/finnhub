@@ -13,12 +13,12 @@ const FinnKey = process.env.FinnKey
 const RHEmail = process.env.RHEmail
 const RHPW = process.env.RHPW
 const RHKey = process.env.RHKey
-const GoogleKey = process.env.GoogleKey
-const GoogleEmail = process.env.GoogleEmail
+const GoogleKey = process.env.GOOGLEKEY
+const GoogleEmail = process.env.GOOGLEEMAIL
 // const spreadsheetId = process.env.SpreadsheetId
 const spreadsheetId = "1TV3EgSpbD9bE4yT2WwD4Xld04nC5arnxZsLMmeyh-8k"
 
-
+GoogleKey ? console.log('there is a key') : null
 //finnkey stuff
 const api_key = finnhub.ApiClient.instance.authentications['api_key'];
 api_key.apiKey = FinnKey // Replace this
