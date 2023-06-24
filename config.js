@@ -38,8 +38,7 @@ const auth = new google.auth.JWT(
 )
 
 auth.authorize((err, tokens) => {
-  err ? console.log(err) 
-    : console.log(tokens.token_type)
+  tokens ? console.log(tokens.token_type) : console.log('no tokens!')
 });
 
 google.options({auth})
