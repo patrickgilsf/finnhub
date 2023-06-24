@@ -15,7 +15,7 @@ const getStocks = async () => {
         spreadsheetId,
         range: 'MyStocks'
       }, (err, res) => {
-        console.log(res);
+        console.log(res.data);
         let stocks = res.data.values.map(([a]) => a);
         err ? console.log(err) : resolve(stocks)
       })
@@ -37,7 +37,9 @@ const getRecData = async () => {
   const stocks = await getStocks();
   console.log(stocks)
   for (let stock of stocks) {
-    let data = await getStockRec(stock);
+    if (stock) {
+      let data = await getStockRec(stock);
+    
     // let recentData = data.filter(a => a.period == firstDay).length;
     let recentData = data[0]
     totalData.push([
@@ -48,6 +50,7 @@ const getRecData = async () => {
       recentData.strongSell,
       recentData.period
     ]);
+    }
   }
   return await totalData
 }

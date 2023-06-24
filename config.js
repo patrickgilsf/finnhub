@@ -19,6 +19,7 @@ const GoogleEmail = process.env.GOOGLEEMAIL
 const spreadsheetId = "1TV3EgSpbD9bE4yT2WwD4Xld04nC5arnxZsLMmeyh-8k"
 
 GoogleKey ? console.log('there is a key') : console.log('there is no key');
+GoogleEmail ? console.log('there is a google email') : console.log('no google email');
 
 //finnkey stuff
 const api_key = finnhub.ApiClient.instance.authentications['api_key'];
