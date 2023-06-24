@@ -34,8 +34,8 @@ jobs:
     - name: 'Create env file'
       run: |
         touch .env
-      env:
-        GOOGLEKEY: ${{ secrets.GOOGLEKEY }}s
-        GOOGLEEMAIL: ${{ secrets.GOOGLEEMAIL }}
+        echo "env created"
+        echo ${{ secrets.GOOGLEEMAIL }} > ".env"
+        echo ${{ secrets.GOOGLEKEY }} >> ".env"
     - run: node index
 
