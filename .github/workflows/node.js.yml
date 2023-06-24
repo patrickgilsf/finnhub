@@ -11,6 +11,10 @@ on:
   schedule:
     - cron: '0 8 * * *'
 
+env:
+  GOOGLEEMAIL: ${{ secrets.GOOGLEEMAIL}}
+  GOOGLEKEY: ${{ secrets.GOOGLEKEY}}
+
 jobs:
   build:
 
@@ -31,11 +35,5 @@ jobs:
     - name: change directory
       run: cd .
     - run: npm install
-    - name: 'Create env file'
-      run: |
-        touch .env
-        echo "env created"
-        echo "${{ secrets.GOOGLEEMAIL }}"" > .env
-        echo "${{ secrets.GOOGLEKEY }}"" > .env
     - run: node index
 
