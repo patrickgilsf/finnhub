@@ -34,6 +34,12 @@ const auth = new google.auth.JWT(
   ],
   null
 )
+
+auth.authorize((err, tokens) => {
+  err ? console.log(err) 
+    : console.log(tokens.token_type)
+});
+
 google.options({auth})
 const sheets = google.sheets('v4');
 
