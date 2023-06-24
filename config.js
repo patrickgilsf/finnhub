@@ -10,12 +10,8 @@ import yahooFinance from 'yahoo-finance';
 
 
 const FinnKey = process.env.FinnKey
-const RHEmail = process.env.RHEmail
-const RHPW = process.env.RHPW
-const RHKey = process.env.RHKey
 const GoogleKey = process.env.GOOGLEKEY.split(String.raw`\n`).join('\n')
 const GoogleEmail = process.env.GOOGLEEMAIL
-// const spreadsheetId = process.env.SpreadsheetId
 const spreadsheetId = "1TV3EgSpbD9bE4yT2WwD4Xld04nC5arnxZsLMmeyh-8k"
 
 GoogleKey ? console.log('there is a key') : console.log('there is no key');
