@@ -2,9 +2,7 @@ import {
   sheets,
   spreadsheetId,
   finnhubClient,
-  firstDay,
-  googleFinance,
-  yahooFinance
+  firstDay
 } from './config.js'
 console.log(spreadsheetId);
 const getStocks = async () => {
