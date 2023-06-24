@@ -15,6 +15,7 @@ const getStocks = async () => {
         spreadsheetId,
         range: 'MyStocks'
       }, (err, res) => {
+        console.log(res);
         let stocks = res.data.values.map(([a]) => a);
         err ? console.log(err) : resolve(stocks)
       })
