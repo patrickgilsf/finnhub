@@ -15,6 +15,7 @@ env:
   GOOGLEEMAIL: ${{ secrets.GOOGLEEMAIL }}
   GOOGLEKEY: ${{ secrets.GOOGLEKEY }}
   FinnKey: ${{ secrets. FINNKEY }}
+  AlphaKey: ${{ secrets.ALPHAKEY }}
 
 jobs:
   build:

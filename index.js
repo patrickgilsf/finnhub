@@ -2,24 +2,26 @@ import {
   sheets,
   spreadsheetId,
   finnhubClient,
-  firstDay
+  alpha
 } from './config.js'
-console.log(spreadsheetId);
+
+//rate limiting delay
+const delay = time => new Promise(res=>setTimeout(res,time));
+
 const getStocks = async () => {
   try {
     console.log('getting stock symbols from Google APIs')
     return new Promise((resolve, reject) => {
       sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: 'MyStocks'
+        range: 'stockData'
       }, (err, res) => {
-        console.log(res.data);
-        let stocks = res.data.values.map(([a]) => a);
-        err ? console.log(err) : resolve(stocks)
+        // let stocks = res.data.values.map(([a]) => a);
+        // err ? console.log(err) : resolve(stocks)
+        err ? console.log(err) : resolve(res.data.values);
       })
     })
   } catch(err) {reject(err)}
-
 }
 
 const getStockRec = async (stock) => {
@@ -30,35 +32,67 @@ const getStockRec = async (stock) => {
   })
 }
 
-const getRecData = async () => {
-  let totalData = [];
-  const stocks = await getStocks();
-  console.log(stocks)
-  for (let stock of stocks) {
-    if (stock) {
-      let data = await getStockRec(stock);
-    
-    // let recentData = data.filter(a => a.period == firstDay).length;
-    let recentData = data[0]
-    totalData.push([
-      recentData.buy,
-      recentData.hold,
-      recentData.sell,
-      recentData.strongBuy,
-      recentData.strongSell,
-      recentData.period
-    ]);
+const getFinancials = async (stock) => {
+  return new Promise((resolve, reject) => {
+    try {
+      alpha.fundamental.company_overview(stock)
+      .then((data) => data ? resolve(data) : console.log(`error getting data for ${stock}`))
     }
-  }
-  return await totalData
+    catch {e => reject(e)};
+  })
 }
 
-const postToGoogle = async () => {
-  let inputData = await getRecData();
+const getRecData = async () => {
+  let totalData = [];
+  const stockArray = await getStocks();
+  let keys = stockArray[0];
+  for (let row of stockArray) {
+    let stockObj = {};
+    for (let i = 0; i < row.length; i++) {
+      stockObj[keys[i]] = row[i];
+    };
+    totalData.push(stockObj);
+  }
+  totalData = totalData//.splice(1, totalData.length);
+
+  for (let stock of totalData) {
+    console.log(`Getting data for ${stock.Symbol}`)
+    if (stock.Type == "Stock") {
+
+      //get stock recs
+      let recs = await getStockRec(stock.Symbol);
+      let recent = recs[0];
+      stock.Buy = recent.buy;
+      stock.Hold = recent.hold;
+      stock.Sell = recent.sell;
+      stock['Strong\nBuy'] = recent.strongBuy;
+      stock['Strong\nSell'] = recent.strongSell;
+      stock['Last Ratings\nUpdate'] = recent.period;
+
+      //get financials
+      
+      let fin = await getFinancials(stock.Symbol);
+      if (fin) {
+        // console.log(fin);
+        stock.EBITDA = fin.EBITDA;
+        stock['Price to Earnings'] = fin.PERatio;
+        stock['Price to Book Value'] = fin.PriceToBookRatio;
+        stock['Earnings Per Share'] = fin.EPS;
+      }
+      await delay(20000); //alpha vantage api rate limit is 5/second on free tier
+      
+    }
+  }
+  // console.log(totalData);
+  return await totalData;
+}
+
+const postToGoogle = async (inputData) => {
+  // let inputData = await getRecData();
   console.log(inputData)
   sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: 'RecData',
+    range: 'stockData',
     valueInputOption: 'USER_ENTERED',
     includeValuesInResponse: true,
     resource: {
@@ -69,34 +103,15 @@ const postToGoogle = async () => {
   })
 }
 
+const main = async () => {
+  let data = await getRecData();
+  console.log(data);
+  let googleData = [];
+  for (let row of data) {
+    googleData.push(Object.values(row))
+  }
+  console.log(googleData);
+  postToGoogle(googleData);
+}
 
-postToGoogle()
-// googleFinance.companyNews({
-//   symbol: 'NASDAQ:AAPL'
-// }, function (err, news) {
-//   console.log(news)
-// });
-
-
-
-
-
-
-
-// //robinhood stuff
-// const credentials = {
-//   username: RHEmail,
-//   password: RHPW
-// }
-// const token = {
-//   token: RHKey
-// }
-// const RHUrl = 'https://api.robinhood.com/'
-
-// var Robinhood = robinhood(token, (err, data) => {
-//     Robinhood.positions((err, res, body) => {
-//       for (let url of body.results) {
-//         console.log(url.url)
-//       }
-//   })
-// });
+await main();

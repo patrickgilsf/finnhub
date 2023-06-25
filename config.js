@@ -1,18 +1,15 @@
 import 'dotenv/config';
 import finnhub from "finnhub";
-import WebSocket, { WebSocketServer } from 'ws';
-import robinhood from 'robinhood';
-import axios from 'axios';
 import {google} from 'googleapis';
 import moment from 'moment';
-import googleFinance from 'google-finance';
-import yahooFinance from 'yahoo-finance';
+import alphavantage from 'alphavantage';
 
 
 const FinnKey = process.env.FinnKey
 const GoogleKey = process.env.GOOGLEKEY.split(String.raw`\n`).join('\n')
 const GoogleEmail = process.env.GOOGLEEMAIL
 const spreadsheetId = "1TV3EgSpbD9bE4yT2WwD4Xld04nC5arnxZsLMmeyh-8k"
+const AlphaKey = process.env.AlphaKey
 
 FinnKey && GoogleKey && GoogleEmail 
   ? console.log('all keys successfully loaded!')
@@ -37,18 +34,18 @@ const auth = new google.auth.JWT(
 google.options({auth})
 const sheets = google.sheets('v4');
 
+//alpha vantage
+const alpha = alphavantage({key: AlphaKey})
+
+
 //first day of month
 var date = new Date();
 var firstDay = moment(new Date(date.getFullYear(), date.getMonth(), 1)).format('YYYY-MM-DD');
 
 
-
-console.log('config file deployed')
 export {
   sheets,
   spreadsheetId,
   finnhubClient,
-  firstDay,
-  googleFinance,
-  yahooFinance
+  alpha
 }
