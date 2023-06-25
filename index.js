@@ -74,13 +74,18 @@ const getRecData = async () => {
       let fin = await getFinancials(stock.Symbol);
       if (fin) {
         // console.log(fin);
-        stock.EBITDA = fin.EBITDA;
+        stock.Sector = fin.Sector;
         stock['Price to Earnings'] = fin.PERatio;
         stock['Price to Book Value'] = fin.PriceToBookRatio;
+        stock['Dividend Yield'] = fin.DividendYield;
+        stock.EBITDA = fin.EBITDA;
+        stock['EV to Ebitda'] = fin.EVToEBITDA;
         stock['Earnings Per Share'] = fin.EPS;
+        stock['Price to Sales Ratio'] = fin.PriceToSalesRatioTTM;
+        stock['PEG Ratio'] = fin.PEGRatio;
+
       }
       await delay(20000); //alpha vantage api rate limit is 5/second on free tier
-      
     }
   }
   // console.log(totalData);
