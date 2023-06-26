@@ -8,6 +8,14 @@ import {
 //rate limiting delay
 const delay = time => new Promise(res=>setTimeout(res,time));
 
+const calculateGL = (today, total, buy) => {
+  let todayVal = Number(today) * Number(total);
+  let buyVal = Number(buy) * Number(total);
+  // console.log(todayVal, buyVal);  
+  return Math.round((todayVal - buyVal) * 100) / 100;
+}
+
+
 const getStocks = async () => {
   try {
     console.log('getting stock symbols from Google APIs')
@@ -16,13 +24,19 @@ const getStocks = async () => {
         spreadsheetId,
         range: 'stockData'
       }, (err, res) => {
-        // let stocks = res.data.values.map(([a]) => a);
-        // err ? console.log(err) : resolve(stocks)
         err ? console.log(err) : resolve(res.data.values);
       })
     })
   } catch(err) {reject(err)}
 }
+
+const getProfile = (stock) => {
+  return new Promise((resolve, reject) => {
+    finnhubClient.companyProfile2({'symbol': stock}, (error, data, response) => {
+      error ? reject(error) : resolve(data);
+    })
+  })
+};
 
 const getPrice = async (stock) => {
   return new Promise((resolve, reject) => {
@@ -30,14 +44,15 @@ const getPrice = async (stock) => {
       error ? reject(error) : resolve(data)
     })
   })
-}
+};
+
 const getStockRec = async (stock) => {
   return new Promise((resolve, reject) => {
     finnhubClient.recommendationTrends(stock, (error, data, response) => {
       error ? reject(error) : resolve(data)
     })
   })
-}
+};
 
 const getFinancials = async (stock) => {
   return new Promise((resolve, reject) => {
@@ -63,8 +78,20 @@ const getRecData = async () => {
   totalData = totalData//.splice(1, totalData.length);
   // console.log(totalData);
   for (let stock of totalData) {
-    console.log(`Getting data for ${stock.Symbol}`)
+    console.log(`Getting data for ${stock.Symbol}`);
+
+    //math for personal positions
+    if (stock.Owned == "TRUE") {
+      stock['Gain Loss'] = calculateGL(stock['Price Today'], stock['Total Shares'], stock['Price at Buy']);
+      // console.log(`gain loss for ${stock.Symbol}: ${stock['Gain Loss']}`);
+    }
+
+    //stocks only processing
     if (stock.Type == "Stock") {
+
+      //get stock name and hyper link
+      let profile = await getProfile(stock.Symbol);
+      stock.Name = `=HYPERLINK("${profile.weburl}", "${profile.name}")`;
 
       //get stock price
       let price = await getPrice(stock.Symbol);
@@ -86,18 +113,19 @@ const getRecData = async () => {
       if (fin) {
         // console.log(fin);
         stock.Sector = fin.Sector;
-        stock['Price to Earnings'] = fin.PERatio;
-        stock['Price to Book Value'] = fin.PriceToBookRatio;
-        stock['Dividend Yield'] = fin.DividendYield;
-        stock.EBITDA = fin.EBITDA;
-        stock['EV to Ebitda'] = fin.EVToEBITDA;
-        stock['Earnings Per Share'] = fin.EPS;
-        stock['Price to Sales Ratio'] = fin.PriceToSalesRatioTTM;
-        stock['PEG Ratio'] = fin.PEGRatio;
-
-      }
+        stock['Price to Earnings'] = fin.PERatio ? fin.PERatio : 'No Info';
+        stock['Price to Book Value'] = fin.PriceToBookRatio ? fin.PriceToBookRatio : 'No Info';
+        stock['Dividend Yield'] = fin.DividendYield ? fin.DividendYield : 'No Info';
+        stock.EBITDA = fin.EBITDA ? fin.EBITDA : 'No Info';
+        stock['EV to Ebitda'] = fin.EVToEBITDA ? fin.EVToEBITDA : 'No Info';
+        stock['Earnings Per Share'] = fin.EPS ? fin.EPS : 'No Info';
+        stock['Price to Sales Ratio'] = fin.PriceToSalesRatioTTM ? fin.PriceToSalesRatioTTM : 'No Info';
+        stock['PEG Ratio'] = fin.PEGRatio ? fin.PEGRatio : 'No Info';
+      };
+      // console.log(stock);
       await delay(20000); //alpha vantage api rate limit is 5/second on free tier
     }
+
   }
   // console.log(totalData);
   return await totalData;

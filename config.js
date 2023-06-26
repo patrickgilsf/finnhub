@@ -8,7 +8,7 @@ import alphavantage from 'alphavantage';
 const FinnKey = process.env.FinnKey
 const GoogleKey = process.env.GOOGLEKEY.split(String.raw`\n`).join('\n')
 const GoogleEmail = process.env.GOOGLEEMAIL
-const spreadsheetId = "1TV3EgSpbD9bE4yT2WwD4Xld04nC5arnxZsLMmeyh-8k"
+const spreadsheetId = process.env.SpreadsheetId
 const AlphaKey = process.env.AlphaKey
 
 FinnKey && GoogleKey && GoogleEmail 

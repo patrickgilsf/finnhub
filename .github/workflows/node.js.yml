@@ -16,6 +16,7 @@ env:
   GOOGLEKEY: ${{ secrets.GOOGLEKEY }}
   FinnKey: ${{ secrets. FINNKEY }}
   AlphaKey: ${{ secrets.ALPHAKEY }}
+  SpreadsheetId: ${{ secrets.SPREADSHEETID }}
 
 jobs:
   build:
