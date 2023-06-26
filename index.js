@@ -24,6 +24,13 @@ const getStocks = async () => {
   } catch(err) {reject(err)}
 }
 
+const getPrice = async (stock) => {
+  return new Promise((resolve, reject) => {
+    finnhubClient.quote(stock, (error, data, response) => {
+      error ? reject(error) : resolve(data)
+    })
+  })
+}
 const getStockRec = async (stock) => {
   return new Promise((resolve, reject) => {
     finnhubClient.recommendationTrends(stock, (error, data, response) => {
@@ -54,10 +61,14 @@ const getRecData = async () => {
     totalData.push(stockObj);
   }
   totalData = totalData//.splice(1, totalData.length);
-
+  // console.log(totalData);
   for (let stock of totalData) {
     console.log(`Getting data for ${stock.Symbol}`)
     if (stock.Type == "Stock") {
+
+      //get stock price
+      let price = await getPrice(stock.Symbol);
+      stock['Price Today'] = price.c;
 
       //get stock recs
       let recs = await getStockRec(stock.Symbol);
