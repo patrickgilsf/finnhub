@@ -62,6 +62,14 @@ const getFinancials = async (stock) => {
     }
     catch {e => reject(e)};
   })
+};
+
+const getETF = async (stock) => {
+  return new Promise((resolve, reject) => {
+      finnhubClient.etfsProfile({'symbol': stock}, error, data, response => {
+        error ? reject(error) : resolve(data)
+      })
+  })
 }
 
 const getRecData = async () => {
@@ -124,6 +132,12 @@ const getRecData = async () => {
       };
       // console.log(stock);
       await delay(20000); //alpha vantage api rate limit is 5/second on free tier
+    };
+    if (stock.Type == "ETF") {
+      let etf = await getETF(stock.Symbol);
+      stock.Name = `=HYPERLINK("${etf.profile.website}", "${etf.profile.name}")`;
+      stock['Price to Book Value'] = etf.profile.priceToBook;
+      stock['Price to Earnings'] = etf.profile.priceToEarnings;
     }
 
   }
@@ -133,12 +147,12 @@ const getRecData = async () => {
 
 const postToGoogle = async (inputData) => {
   // let inputData = await getRecData();
-  console.log(inputData)
+  // console.log(inputData)
   sheets.spreadsheets.values.update({
     spreadsheetId,
     range: 'stockData',
     valueInputOption: 'USER_ENTERED',
-    includeValuesInResponse: true,
+    includeValuesInResponse: false,
     resource: {
       values: inputData
     }
