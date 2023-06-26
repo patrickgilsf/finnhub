@@ -64,13 +64,15 @@ const getFinancials = async (stock) => {
   })
 };
 
-const getETF = async (stock) => {
-  return new Promise((resolve, reject) => {
-      finnhubClient.etfsProfile({'symbol': stock}, error, data, response => {
-        error ? reject(error) : resolve(data)
-      })
-  })
-}
+// //etfs don't work with free account
+// const getETF = async (stock) => {
+//   return new Promise((resolve, reject) => {
+//       finnhubClient.indicesConstituents({'symbol': stock}, (error, data, response) => {
+//         error ? reject(error) : resolve(data)
+//       })
+//   })
+// };
+
 
 const getRecData = async () => {
   let totalData = [];
@@ -133,12 +135,14 @@ const getRecData = async () => {
       // console.log(stock);
       await delay(20000); //alpha vantage api rate limit is 5/second on free tier
     };
-    if (stock.Type == "ETF") {
-      let etf = await getETF(stock.Symbol);
-      stock.Name = `=HYPERLINK("${etf.profile.website}", "${etf.profile.name}")`;
-      stock['Price to Book Value'] = etf.profile.priceToBook;
-      stock['Price to Earnings'] = etf.profile.priceToEarnings;
-    }
+
+    // //ETF profiles, commented out because I don't have a premium account
+    // if (stock.Type == "ETF") {
+    //   let etf = await getETF(stock.Symbol);
+    //   stock.Name = `=HYPERLINK("${etf.profile.website}", "${etf.profile.name}")`;
+    //   stock['Price to Book Value'] = etf.profile.priceToBook;
+    //   stock['Price to Earnings'] = etf.profile.priceToEarnings;
+    // }
 
   }
   // console.log(totalData);
@@ -173,3 +177,4 @@ const main = async () => {
 }
 
 await main();
+
