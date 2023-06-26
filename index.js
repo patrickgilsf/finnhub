@@ -110,12 +110,12 @@ const postToGoogle = async (inputData) => {
 
 const main = async () => {
   let data = await getRecData();
-  console.log(data);
+  // console.log(data);
   let googleData = [];
   for (let row of data) {
     googleData.push(Object.values(row))
   }
-  console.log(googleData);
+  // console.log(googleData);
   postToGoogle(googleData);
 }
 
