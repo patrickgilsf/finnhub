@@ -1,13 +1,17 @@
+import axios from 'axios';
 import {
   sheets,
   spreadsheetId,
   finnhubClient,
-  alpha
+  alpha,
+  getIEX,
+  QuiverToken
 } from './config.js'
 
 //rate limiting delay
 const delay = time => new Promise(res=>setTimeout(res,time));
 
+//calculates unrealized gain and loss
 const calculateGL = (today, total, buy) => {
   let todayVal = Number(today) * Number(total);
   let buyVal = Number(buy) * Number(total);
@@ -15,14 +19,14 @@ const calculateGL = (today, total, buy) => {
   return Math.round((todayVal - buyVal) * 100) / 100;
 }
 
-
-const getStocks = async () => {
+//pull current data from Google
+const getGoogleData = async (range) => {
   try {
     console.log('getting stock symbols from Google APIs')
     return new Promise((resolve, reject) => {
       sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: 'stockData'
+        range,
       }, (err, res) => {
         err ? console.log(err) : resolve(res.data.values);
       })
@@ -64,19 +68,35 @@ const getFinancials = async (stock) => {
   })
 };
 
-// //etfs don't work with free account
-// const getETF = async (stock) => {
-//   return new Promise((resolve, reject) => {
-//       finnhubClient.indicesConstituents({'symbol': stock}, (error, data, response) => {
-//         error ? reject(error) : resolve(data)
-//       })
-//   })
-// };
+//get api call from quiver api
+const quiverAPI = async (url) => {
+  return new Promise((resolve, reject) => {
+      axios.request(url, {headers: {
+        accept: "application/json",
+        "X-CSRFToken": "TyTJwjuEC7VV7mOqZ622haRaaUr0x0Ng4nrwSRFKQs7vdoBcJlK9qjAS69ghzhFu",
+        Authorization: `Token ${QuiverToken}`
+      }})
+      .then(res => {
+        resolve(res.data)
+      })
+      .catch(e => {reject(e)})
+  })
+}
+
+//get congressional trading
+const getCongress = async () => {
+  let rtn = [];
+  let con = await quiverAPI('https://api.quiverquant.com/beta/live/congresstrading');
+  for (let stock of con) {
+    stock.Amount > 100000 ? rtn.push(stock) : null;
+  };
+  return rtn;
+}
 
 
 const getRecData = async () => {
   let totalData = [];
-  const stockArray = await getStocks();
+  const stockArray = await getGoogleData('stockData');
   let keys = stockArray[0];
   for (let row of stockArray) {
     let stockObj = {};
@@ -86,14 +106,13 @@ const getRecData = async () => {
     totalData.push(stockObj);
   }
   totalData = totalData//.splice(1, totalData.length);
-  // console.log(totalData);
+
   for (let stock of totalData) {
     console.log(`Getting data for ${stock.Symbol}`);
 
     //math for personal positions
     if (stock.Owned == "TRUE") {
       stock['Gain Loss'] = calculateGL(stock['Price Today'], stock['Total Shares'], stock['Price at Buy']);
-      // console.log(`gain loss for ${stock.Symbol}: ${stock['Gain Loss']}`);
     }
 
     //stocks only processing
@@ -105,7 +124,8 @@ const getRecData = async () => {
 
       //get stock price
       let price = await getPrice(stock.Symbol);
-      stock['Price Today'] = price.c;
+      // stock['Price Today'] = price.c;
+      
 
       //get stock recs
       let recs = await getStockRec(stock.Symbol);
@@ -116,9 +136,9 @@ const getRecData = async () => {
       stock['Strong\nBuy'] = recent.strongBuy;
       stock['Strong\nSell'] = recent.strongSell;
       stock['Last Ratings\nUpdate'] = recent.period;
+      stock['Price Today'] = `=GOOGLEFINANCE("${stock.Symbol}", "price")`
 
       //get financials
-      
       let fin = await getFinancials(stock.Symbol);
       if (fin) {
         // console.log(fin);
@@ -136,25 +156,26 @@ const getRecData = async () => {
       await delay(20000); //alpha vantage api rate limit is 5/second on free tier
     };
 
-    // //ETF profiles, commented out because I don't have a premium account
+    //ETF hyperlink data
+    if (stock.Type == "ETF") {
+      stock['Price Today'] = `=GOOGLEFINANCE("${stock.Symbol}", "price")`;
+    }
+    //ETF profiles, commented out because I don't have a premium account
     // if (stock.Type == "ETF") {
-    //   let etf = await getETF(stock.Symbol);
-    //   stock.Name = `=HYPERLINK("${etf.profile.website}", "${etf.profile.name}")`;
-    //   stock['Price to Book Value'] = etf.profile.priceToBook;
-    //   stock['Price to Earnings'] = etf.profile.priceToEarnings;
+    //   let etf = await getIEX(stock.Symbol);
+    //   stock['Price Today'] = etf.latestPrice;
+    //   await delay(20000);
     // }
 
   }
-  // console.log(totalData);
+
   return await totalData;
 }
 
-const postToGoogle = async (inputData) => {
-  // let inputData = await getRecData();
-  // console.log(inputData)
+const postToGoogle = async (inputData, range) => {
   sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: 'stockData',
+    range,
     valueInputOption: 'USER_ENTERED',
     includeValuesInResponse: false,
     resource: {
@@ -166,15 +187,40 @@ const postToGoogle = async (inputData) => {
 }
 
 const main = async () => {
+  //sheet 1
   let data = await getRecData();
-  // console.log(data);
   let googleData = [];
   for (let row of data) {
     googleData.push(Object.values(row))
   }
   // console.log(googleData);
-  postToGoogle(googleData);
+  postToGoogle(googleData, 'stockData');
+
+  //sheet 2
+  let totalData = [];
+  let cData = await getGoogleData('congressData');
+  totalData.push(cData[0]);
+
+  
+  let congress = await getCongress();
+  for (let trade of congress) {
+    console.log(`Getting data ${trade.Representative} trade data...`)
+    let profile = await getProfile(trade.Ticker);
+    totalData.push([
+      trade.Representative,
+      trade.TransactionDate,
+      trade.Ticker,
+      `=HYPERLINK("${profile.weburl}", "${profile.name}")`,
+      trade.Transaction,
+      trade.Amount
+    ]);
+    await delay(20000);
+  }
+  postToGoogle(totalData, 'congressData')
+
+
 }
 
 await main();
+
 

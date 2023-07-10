@@ -17,6 +17,7 @@ env:
   FinnKey: ${{ secrets. FINNKEY }}
   AlphaKey: ${{ secrets.ALPHAKEY }}
   SpreadsheetId: ${{ secrets.SPREADSHEETID }}
+  QuiverToken: ${{ secrets.QUIVERTOKEN}}
 
 jobs:
   build:
